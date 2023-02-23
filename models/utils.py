@@ -3,6 +3,7 @@ import numpy as np
 # PyTorch
 import torch
 import torch.nn as nn
+import math
 
 y_table = np.array([
     [16, 11, 10, 16, 24, 40, 51, 61],
@@ -48,3 +49,19 @@ def quality_to_factor(quality):
     else:
         quality = 200. - quality * 2
     return quality / 100.
+
+def ani_imshow(sample, sampling_number = 64):
+
+    row_number = int(math.sqrt(sampling_number))
+    col_number = int(math.sqrt(sampling_number))
+    sample = sample[:sampling_number].detach().cpu().numpy()
+    shape = sample.shape
+    show_sample = np.zeros([row_number * shape[2], col_number * shape[3] ]).astype(np.float32)
+    for row in range(row_number):
+        for col in range(col_number):
+            sample_ = sample[row + col * row_number][0]
+            show_sample[ row * shape[2] : (row+1) * shape[2], col * shape[3] : (col+1) * shape[3] ] = (sample_ - sample_.min()) / (sample_.max() - sample_.min()) * 255
+
+    show_sample = show_sample.astype(np.uint8)
+
+    return show_sample

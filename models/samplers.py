@@ -142,7 +142,7 @@ def ode_sampler(score_model,
 
     # Run the black-box ODE solver.
     res = integrate.solve_ivp(ode_func, (start_t, eps), init_x.reshape(-1).cpu().numpy(), rtol=rtol, atol=atol, method='RK45')
-    print(f"Number of function evaluations: {res.nfev}")
+    # print(f"Number of function evaluations: {res.nfev}")
     x = torch.tensor(res.y[:, -1], device=device).reshape(shape)
 
     return x
