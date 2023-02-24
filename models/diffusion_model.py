@@ -5,6 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 import torchvision
+from .noise_channel import *
 #@title Set up the SDE
 import functools
 device = 'cuda' #@param ['cuda', 'cpu'] {'type':'string'}
@@ -154,12 +155,23 @@ def diffusion_coeff(t, sigma):
     return torch.tensor(sigma**t, device=device)
 
 
-def jpeg_compress(x, quality=10):
+def channel_p(x, snr):
+    if snr > 0:
+        power_xt = torch.norm(x)**2/x.numel()
+        std = torch.sqrt(power_xt * 10 ** (-snr / 10))
+        noise = real_awgn(x, std)
+        return noise
+    else:
+        return x
+
+def jpeg_compress(x, quality=10, snr=0):
     x_int = (x.clone().detach()*255).to(dtype=torch.uint8)
     x_jpeg = x_int.clone()
 
     for i in range(x_jpeg.shape[0]):
-        x_jpeg[i] = torchvision.io.decode_jpeg(torchvision.io.encode_jpeg(x_int[i].cpu(), quality=quality))
+        enc_x = torchvision.io.encode_jpeg(x_int[i].cpu(), quality=quality)
+        enc_x_noise = channel_p(enc_x.to(dtype=torch.float32), snr)
+        x_jpeg[i] = torchvision.io.decode_jpeg(enc_x_noise.to(dtype=torch.uint8))
 
     return (x_jpeg/255).to(x.dtype)
 

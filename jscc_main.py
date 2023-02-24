@@ -158,7 +158,7 @@ def main():
     print('Finished Training')
     print('Saving Model...')
 
-    torch.save(autoencoder.state_dict(), os.path.join(args.ckpt_dir+'jscc.pt'))
+    torch.save(autoencoder.state_dict(), os.path.join(args.ckpt_dir+f'jscc{args.snr}.pt'))
 
 
 if __name__ == '__main__':
